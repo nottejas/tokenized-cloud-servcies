@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPU Token System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card h2 {
+            color: #4a5568;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 4px 20px rgba(72, 187, 120, 0.4);
+        }
+        
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background-color: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status.error {
+            background-color: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+        
+        .status.info {
+            background-color: #ebf8ff;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #718096;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4a5568;
+        }
+        
+        .hidden { display: none; }
+        
+        .metamask-connect {
+            background: linear-gradient(45deg, #f6851b, #e2761b);
+        }
+        
+        .metamask-connect:hover {
+            box-shadow: 0 4px 20px rgba(246, 133, 27, 0.4);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 GPU Token System</h1>
+            <p>Tokenized GPU compute hours on blockchain</p>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="card">
+            <div id="connection-status">
+                <button id="connect-btn" class="btn metamask-connect">Connect MetaMask</button>
+                <div id="account-info" class="hidden">
+                    <p><strong>Connected Account:</strong> <span id="account-address"></span></p>
+                    <p><strong>ETH Balance:</strong> <span id="eth-balance"></span> ETH</p>
+                    <p><strong>GPU Token Balance:</strong> <span id="token-balance"></span> GPUC</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contract Configuration -->
+        <div class="card">
+            <h2>⚙️ Contract Configuration</h2>
+            <div class="input-group">
+                <label for="contract-address">Contract Address:</label>
+                <input type="text" id="contract-address" placeholder="Enter contract address after deployment">
+            </div>
+            <button id="load-contract" class="btn">Load Contract</button>
+            <div id="contract-status" class="status hidden"></div>
+        </div>
+
+        <!-- Contract Stats -->
+        <div class="card hidden" id="stats-section">
+            <h2>📊 Contract Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total GPU Hours Available</h3>
+                    <p id="total-available">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total GPU Hours Used</h3>
+                    <p id="total-used">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Price per GPU Hour</h3>
+                    <p id="price-per-hour">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Contract ETH Balance</h3>
+                    <p id="contract-balance">-</p>
+                </div>
+            </div>
+            <button id="refresh-stats" class="btn btn-secondary">Refresh Stats</button>
+        </div>
+
+        <!-- Purchase & Redeem -->
+        <div class="grid">
+            <div class="card hidden" id="purchase-section">
+                <h2>💰 Purchase GPU Hours</h2>
+                <div class="input-group">
+                    <label for="purchase-amount">GPU Hours to Purchase:</label>
+                    <input type="number" id="purchase-amount" min="1" placeholder="e.g., 10">
+                </div>
+                <div class="input-group">
+                    <label>Estimated Cost:</label>
+                    <p id="estimated-cost">Enter amount above</p>
+                </div>
+                <button id="purchase-btn" class="btn">Purchase GPU Hours</button>
+                <div id="purchase-status" class="status hidden"></div>
+            </div>
+
+            <div class="card hidden" id="redeem-section">
+                <h2>🔥 Redeem GPU Hours</h2>
+                <div class="input-group">
+                    <label for="redeem-amount">GPU Hours to Redeem:</label>
+                    <input type="number" id="redeem-amount" min="1" placeholder="e.g., 5">
+                </div>
+                <button id="redeem-btn" class="btn">Redeem GPU Hours</button>
+                <div id="redeem-status" class="status hidden"></div>
+            </div>
+        </div>
+
+        <!-- User Stats -->
+        <div class="card hidden" id="user-stats-section">
+            <h2>👤 Your GPU Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Purchased</h3>
+                    <p id="user-purchased">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Used</h3>
+                    <p id="user-used">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Current Balance</h3>
+                    <p id="user-balance">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Contract ABI (Application Binary Interface)
+        const CONTRACT_ABI = [
+            "function name() view returns (string)",
+            "function symbol() view returns (string)",
+            "function decimals() view returns (uint8)",
+            "function totalSupply() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function purchaseGPUHours(uint256) payable",
+            "function redeemGPUHours(uint256)",
+            "function getContractStats() view returns (uint256, uint256, uint256, uint256)",
+            "function getGPUStats(address) view returns (uint256, uint256, uint256)",
+            "function pricePerToken() view returns (uint256)",
+            "event GPUHoursMinted(address indexed to, uint256 amount, uint256 timestamp)",
+            "event GPUHoursRedeemed(address indexed from, uint256 amount, uint256 timestamp)"
+        ];
+
+        let provider;
+        let signer;
+        let contract;
+        let currentAccount;
+
+        // DOM elements
+        const connectBtn = document.getElementById('connect-btn');
+        const accountInfo = document.getElementById('account-info');
+        const accountAddress = document.getElementById('account-address');
+        const ethBalance = document.getElementById('eth-balance');
+        const tokenBalance = document.getElementById('token-balance');
+        const contractAddressInput = document.getElementById('contract-address');
+        const loadContractBtn = document.getElementById('load-contract');
+        const contractStatus = document.getElementById('contract-status');
+
+        // Initialize the application
+        async function init() {
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask is installed!');
+            } else {
+                showStatus('contract-status', 'Please install MetaMask to use this application', 'error');
+                return;
+            }
+
+            connectBtn.addEventListener('click', connectWallet);
+            loadContractBtn.addEventListener('click', loadContract);
+            
+            // Purchase functionality
+            document.getElementById('purchase-amount').addEventListener('input', updateEstimatedCost);
+            document.getElementById('purchase-btn').addEventListener('click', purchaseGPUHours);
+            
+            // Redeem functionality
+            document.getElementById('redeem-btn').addEventListener('click', redeemGPUHours);
+            
+            // Refresh stats
+            document.getElementById('refresh-stats').addEventListener('click', refreshStats);
+
+            // Check if already connected
+            if (window.ethereum.selectedAddress) {
+                await connectWallet();
+            }
+        }
+
+        async function connectWallet() {
+            try {
+                connectBtn.innerHTML = '<div class="loading"></div>Connecting...';
+                connectBtn.disabled = true;
+
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                currentAccount = await signer.getAddress();
+
+                // Update UI
+                accountAddress.textContent = currentAccount;
+                await updateBalances();
+                
+                accountInfo.classList.remove('hidden');
+                connectBtn.style.display = 'none';
+
+                showStatus('contract-status', 'Wallet connected successfully!', 'success');
+
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                showStatus('contract-status', 'Failed to connect wallet: ' + error.message, 'error');
+                connectBtn.innerHTML = 'Connect MetaMask';
+                connectBtn.disabled = false;
+            }
+        }
+
+        async function loadContract() {
+            const address = contractAddressInput.value.trim();
+            if (!address) {
+                showStatus('contract-status', 'Please enter a contract address', 'error');
+                return;
+            }
+
+            if (!ethers.utils.isAddress(address)) {
+                showStatus('contract-status', 'Invalid contract address', 'error');
+                return;
+            }
+
+            try {
+                contract = new ethers.Contract(address, CONTRACT_ABI, signer);
+                
+                // Test the contract by calling a read function
+                const name = await contract.name();
+                const symbol = await contract.symbol();
+                
+                showStatus('contract-status', `Contract loaded: ${name} (${symbol})`, 'success');
+                
+                // Show all sections
+                document.getElementById('stats-section').classList.remove('hidden');
+                document.getElementById('purchase-section').classList.remove('hidden');
+                document.getElementById('redeem-section').classList.remove('hidden');
+                document.getElementById('user-stats-section').classList.remove('hidden');
+                
+                // Load initial data
+                await refreshStats();
+                await updateBalances();
+                
+            } catch (error) {
+                console.error('Error loading contract:', error);
+                showStatus('contract-status', 'Failed to load contract: ' + error.message, 'error');
+            }
+        }
+
+        async function updateBalances() {
+            if (!currentAccount) return;
+            
+            try {
+                // Update ETH balance
+                const ethBal = await provider.getBalance(currentAccount);
+                ethBalance.textContent = parseFloat(ethers.utils.formatEther(ethBal)).toFixed(4);
+                
+                // Update token balance if contract is loaded
+                if (contract) {
+                    const tokenBal = await contract.balanceOf(currentAccount);
+                    tokenBalance.textContent = ethers.utils.formatUnits(tokenBal, 18);
+                    
+                    // Update user stats
+                    const userStats = await contract.getGPUStats(currentAccount);
+                    document.getElementById('user-purchased').textContent = userStats.purchased.toString();
+                    document.getElementById('user-used').textContent = userStats.used.toString();
+                    document.getElementById('user-balance').textContent = userStats.balance.toString();
+                }
+                
+            } catch (error) {
+                console.error('Error updating balances:', error);
+            }
+        }
+
+        async function refreshStats() {
+            if (!contract) return;
+            
+            try {
+                const stats = await contract.getContractStats();
+                
+                document.getElementById('total-available').textContent = stats.totalAvailable.toString();
+                document.getElementById('total-used').textContent = stats.totalUsed.toString();
+                document.getElementById('price-per-hour').textContent = ethers.utils.formatEther(stats.currentPrice) + ' ETH';
+                document.getElementById('contract-balance').textContent = ethers.utils.formatEther(stats.contractBalance) + ' ETH';
+                
+                await updateBalances();
+                
+            } catch (error) {
+                console.error('Error refreshing stats:', error);
+                showStatus('contract-status', 'Failed to refresh stats: ' + error.message, 'error');
+            }
+        }
+
+        async function updateEstimatedCost() {
+            const amount = document.getElementById('purchase-amount').value;
+            const costElement = document.getElementById('estimated-cost');
+            
+            if (!amount || !contract) {
+                costElement.textContent = 'Enter amount above';
+                return;
+            }
+            
+            try {
+                const pricePerToken = await contract.pricePerToken();
+                const totalCost = pricePerToken.mul(amount);
+                costElement.textContent = ethers.utils.formatEther(totalCost) + ' ETH';
+            } catch (error) {
+                costElement.textContent = 'Error calculating cost';
+            }
+        }
+
+        async function purchaseGPUHours() {
+            const amount = parseInt(document.getElementById('purchase-amount').value);
+            const purchaseBtn = document.getElementById('purchase-btn');
+            
+            if (!amount || amount <= 0) {
+                showStatus('purchase-status', 'Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                purchaseBtn.innerHTML = '<div class="loading"></div>Purchasing...';
+                purchaseBtn.disabled = true;
+                
+                const pricePerToken = await contract.pricePerToken();
+                const totalCost = pricePerToken.mul(amount);
+                
+                const tx = await contract.purchaseGPUHours(amount, {
+                    value: totalCost,
+                    gasLimit: 200000
+                });
+                
+                showStatus('purchase-status', 'Transaction submitted. Waiting for confirmation...', 'info');
+                
+                await tx.wait();
+                
+                showStatus('purchase-status', `Successfully purchased ${amount} GPU hours!`, 'success');
+                
+                // Reset form and refresh data
+                document.getElementById('purchase-amount').value = '';
+                document.getElementById('estimated-cost').textContent = 'Enter amount above';
+                await refreshStats();
+                
+            } catch (error) {
+                console.error('Error purchasing GPU hours:', error);
+                showStatus('purchase-status', 'Purchase failed: ' + error.message, 'error');
+            } finally {
+                purchaseBtn.innerHTML = 'Purchase GPU Hours';
+                purchaseBtn.disabled = false;
+            }
+        }
+
+        async function redeemGPUHours() {
+            const amount = parseInt(document.getElementById('redeem-amount').value);
+            const redeemBtn = document.getElementById('redeem-btn');
+            
+            if (!amount || amount <= 0) {
+                showStatus('redeem-status', 'Please enter a valid amount', 'error');
+                return;
+            }
+            
+            try {
+                redeemBtn.innerHTML = '<div class="loading"></div>Redeeming...';
+                redeemBtn.disabled = true;
+                
+                const tx = await contract.redeemGPUHours(amount, {
+                    gasLimit: 150000
+                });
+                
+                showStatus('redeem-status', 'Transaction submitted. Waiting for confirmation...', 'info');
+                
+                await tx.wait();
+                
+                showStatus('redeem-status', `Successfully redeemed ${amount} GPU hours!`, 'success');
+                
+                // Reset form and refresh data
+                document.getElementById('redeem-amount').value = '';
+                await refreshStats();
+                
+            } catch (error) {
+                console.error('Error redeeming GPU hours:', error);
+                showStatus('redeem-status', 'Redemption failed: ' + error.message, 'error');
+            } finally {
+                redeemBtn.innerHTML = 'Redeem GPU Hours';
+                redeemBtn.disabled = false;
+            }
+        }
+
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                // User disconnected
+                connectBtn.style.display = 'block';
+                accountInfo.classList.add('hidden');
+                currentAccount = null;
+            } else {
+                // User switched accounts
+                location.reload();
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            element.classList.remove('hidden');
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    element.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        // Initialize the app when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

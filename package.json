@@ -1,0 +1,31 @@
+{
+  "name": "gpu-token-system",
+  "version": "1.0.0",
+  "description": "Tokenized GPU compute hours system",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy:ganache": "npx hardhat run scripts/deploy.js --network ganache",
+    "deploy:localhost": "npx hardhat run scripts/deploy.js --network localhost",
+    "console": "npx hardhat console --network ganache",
+    "clean": "npx hardhat clean"
+  },
+  "keywords": [
+    "blockchain",
+    "gpu",
+    "tokenization",
+    "defi",
+    "ethereum"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "hardhat": "^2.26.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.2.1"
+  }
+}
