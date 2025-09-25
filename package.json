@@ -8,6 +8,10 @@
     "compile": "npx hardhat compile",
     "deploy:ganache": "npx hardhat run scripts/deploy.js --network ganache",
     "deploy:localhost": "npx hardhat run scripts/deploy.js --network localhost",
+    "deploy:futures:ganache": "npx hardhat run scripts/deploy-futures.js --network ganache",
+    "deploy:futures:localhost": "npx hardhat run scripts/deploy-futures.js --network localhost",
+    "update:frontend": "npx hardhat run scripts/update-all-frontend.js",
+    "start": "node scripts/run-project.js",
     "console": "npx hardhat console --network ganache",
     "clean": "npx hardhat clean"
   },

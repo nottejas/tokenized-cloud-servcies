@@ -20,10 +20,11 @@ module.exports = {
         "0x999dd9020ed3fd16bebd0bdf29c4d3e8569075f0d8d32e7ca3fec3d3b842b29b",
         "0x7f24b1030b23749a21a43730c74df2e2224ea02ffa93f455acdb87d1207f7267"
       ],
-      chainId: 5777, // Change this to match your Ganache Network ID
+      chainId: 1337, // 👈 match Ganache actual chainId
       gas: 6000000,
       gasPrice: 20000000000
     },
+
     // Alternative for Ganache CLI (if you're using CLI instead)
     ganache_cli: {
       url: "http://127.0.0.1:8545",

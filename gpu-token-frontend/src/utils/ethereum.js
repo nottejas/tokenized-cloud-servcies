@@ -12,6 +12,27 @@ let provider;
 let signer;
 let contract;
 
+// Attempt to initialize from a pre-existing global signer (set by WalletConnect)
+const tryInitFromWindow = () => {
+  if (typeof window === 'undefined') return;
+  const evm = window.__evm;
+  if (!contract && evm?.signer) {
+    initializeWithSigner(evm.signer);
+  }
+};
+
+/**
+ * Initialize the module with an external signer (e.g., from a custom wallet flow)
+ * @param {ethers.Signer} externalSigner
+ */
+export const initializeWithSigner = (externalSigner) => {
+  if (!externalSigner) return;
+  signer = externalSigner;
+  // ethers v6 signer may have provider attached
+  provider = externalSigner.provider || provider;
+  contract = new ethers.Contract(CONTRACT_ADDRESS, GPUTokenABI.abi, signer);
+};
+
 /**
  * Connect to MetaMask wallet
  * @returns {Promise<{address: string, chainId: number}>} Connected wallet info
@@ -95,6 +116,10 @@ export const switchNetwork = async () => {
  * @returns {ethers.Contract} Contract instance
  */
 export const getContract = () => {
+  if (!contract) {
+    // Lazily initialize if an external signer was provided elsewhere
+    tryInitFromWindow();
+  }
   if (!contract) {
     throw new Error('Contract not initialized. Please connect wallet first.');
   }

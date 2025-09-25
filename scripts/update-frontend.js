@@ -4,15 +4,19 @@ const path = require('path');
 /**
  * This script updates the contract address in the frontend .env file
  * Run this after deploying the contract to update the frontend configuration
+ * It reads the contract address from the .env file in the project root
  */
 async function main() {
   try {
-    // Get contract address from command line arguments
-    const contractAddress = process.argv[2];
+    // Load environment variables
+    require('dotenv').config();
+    
+    // Get contract address from .env file
+    const contractAddress = process.env.CONTRACT_ADDRESS;
     
     if (!contractAddress) {
-      console.error('❌ Please provide a contract address as an argument');
-      console.log('Usage: npx hardhat run scripts/update-frontend.js -- 0xYourContractAddress');
+      console.error('❌ No contract address found in .env file');
+      console.log('Please add CONTRACT_ADDRESS=0xYourContractAddress to your .env file');
       return;
     }
     

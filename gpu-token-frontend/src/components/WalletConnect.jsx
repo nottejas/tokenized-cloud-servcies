@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ethers } from "ethers";
-import { connectWallet } from "../utils/ethereum";
+import { connectWallet, initializeWithSigner } from "../utils/ethereum";
 
 function getInjectedProviders() {
   const providers = [];
@@ -104,6 +104,8 @@ export default function WalletConnect({ onConnect }) {
       const browserProvider = new ethers.BrowserProvider(provider);
       const signer = await browserProvider.getSigner();
       window.__evm = { provider: browserProvider, signer };
+      // Ensure ethereum.js has a contract initialized with this signer
+      initializeWithSigner(signer);
 
       onConnect?.({
         address: addr,
@@ -122,7 +124,22 @@ export default function WalletConnect({ onConnect }) {
         } else {
           const newAddr = accounts[0];
           setAccount(newAddr);
-          connectWallet().then(onConnect).catch(console.error);
+          (async () => {
+            try {
+              const s = await browserProvider.getSigner();
+              window.__evm = { provider: browserProvider, signer: s };
+              initializeWithSigner(s);
+              onConnect?.({
+                address: newAddr,
+                network: parseInt(await provider.request({ method: "eth_chainId" }), 16).toString(),
+                provider: browserProvider,
+                signer: s,
+                type: "evm",
+              });
+            } catch (e) {
+              console.error(e);
+            }
+          })();
         }
       });
     } catch (e) {

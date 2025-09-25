@@ -22,13 +22,26 @@ A complete Ethereum-based system for purchasing, managing, and redeeming GPU com
 
 ## Setup and Deployment
 
-### 1. Install Dependencies
+### Quick Start (All-in-One)
+
+1. Start Ganache GUI or CLI
+2. Run the all-in-one start script:
+
+```shell
+npm start
+```
+
+This will compile contracts, deploy them, update the frontend, and start the development server.
+
+### Manual Setup
+
+#### 1. Install Dependencies
 
 ```shell
 npm install
 ```
 
-### 2. Start Ganache
+#### 2. Start Ganache
 
 Start Ganache GUI or run:
 
@@ -36,17 +49,42 @@ Start Ganache GUI or run:
 npx ganache-cli
 ```
 
-### 3. Deploy the Contract
+#### 3. Deploy the Contracts
+
+#### Option A: Deploy Only GPUToken Contract
 
 ```shell
-npx hardhat run scripts/deploy.js --network ganache
+npm run deploy:ganache
 ```
 
-Note the deployed contract address from the output.
+#### Option B: Deploy Both GPUToken and GPUFutures Contracts
+
+```shell
+npm run deploy:futures:ganache
+```
+
+Note the deployed contract addresses from the output.
 
 ### 4. Update Frontend Configuration
 
-Update the frontend with your contract address:
+#### Option 1: Using Environment Variables (Recommended)
+
+1. Update the contract addresses in the `.env` file:
+
+```
+CONTRACT_ADDRESS=YOUR_GPU_TOKEN_ADDRESS
+FUTURES_CONTRACT_ADDRESS=YOUR_GPU_FUTURES_ADDRESS
+```
+
+2. Run the update script:
+
+```shell
+npm run update:frontend
+```
+
+#### Option 2: Using Command Line Arguments
+
+Alternatively, you can update the frontend with your contract address directly:
 
 ```shell
 npx hardhat run scripts/update-frontend.js -- YOUR_CONTRACT_ADDRESS
