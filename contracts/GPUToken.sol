@@ -92,6 +92,15 @@ contract GPUToken is ERC20, Ownable, Pausable {
     }
     
     /**
+     * @dev Get GPU hours used by an address
+     * @param _user Address to check
+     * @return used Total GPU hours used
+     */
+    function getGPUHoursUsed(address _user) external view returns (uint256) {
+        return gpuHoursUsed[_user];
+    }
+    
+    /**
      * @dev Update the price per GPU hour token (only owner)
      * @param _newPrice New price in wei
      */

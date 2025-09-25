@@ -20,7 +20,7 @@ module.exports = {
         "0x999dd9020ed3fd16bebd0bdf29c4d3e8569075f0d8d32e7ca3fec3d3b842b29b",
         "0x7f24b1030b23749a21a43730c74df2e2224ea02ffa93f455acdb87d1207f7267"
       ],
-      chainId: 1337, // ✅ Fixed here
+      chainId: 5777, // Change this to match your Ganache Network ID
       gas: 6000000,
       gasPrice: 20000000000
     },

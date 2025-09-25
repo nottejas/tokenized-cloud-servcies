@@ -14,11 +14,11 @@ async function main() {
   
   // Purchase parameters
   const gpuHoursToBuy = 10;
-  const pricePerHour = await gpuToken.pricePerHour();
-  const totalCost = pricePerHour * BigInt(gpuHoursToBuy);
+  const pricePerToken = await gpuToken.pricePerToken();
+  const totalCost = pricePerToken * BigInt(gpuHoursToBuy);
   
   console.log(`💰 Purchasing ${gpuHoursToBuy} GPU hours`);
-  console.log(`💸 Total cost: ${ethers.formatEther(totalCost)} ETH`);
+  console.log(`💸 Total cost: ${ethers.formatEther(totalCost)} ETH (${ethers.formatEther(pricePerToken)} ETH per GPU hour)`);
   console.log(`⏳ Processing transaction...`);
   
   try {

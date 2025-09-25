@@ -11,13 +11,13 @@ async function main() {
   const name = await gpuToken.name();
   const symbol = await gpuToken.symbol();
   const totalSupply = await gpuToken.totalSupply();
-  const pricePerHour = await gpuToken.pricePerHour();
+  const pricePerToken = await gpuToken.pricePerToken();
   
   console.log("🏷️  Contract Details:");
   console.log("   Name:", name);
   console.log("   Symbol:", symbol);
   console.log("   Total Supply:", ethers.formatUnits(totalSupply, 18), symbol);
-  console.log("   Price per Hour:", ethers.formatEther(pricePerHour), "ETH");
+  console.log("   Price per Hour:", ethers.formatEther(pricePerToken), "ETH");
   console.log();
   
   // User stats

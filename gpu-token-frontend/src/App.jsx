@@ -1,34 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+// Import components
+import WalletConnect from './components/WalletConnect'
+import ContractStats from './components/ContractStats'
+import UserAccount from './components/UserAccount'
+import PurchaseForm from './components/PurchaseForm'
+import RedeemForm from './components/RedeemForm'
 
+function App() {
+  const [walletInfo, setWalletInfo] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [activeTab, setActiveTab] = useState('purchase');
+  
+  // Handle wallet connection
+  const handleWalletConnect = (info) => {
+    setWalletInfo(info);
+  };
+  
+  // Handle transaction completion
+  const handleTransactionComplete = () => {
+    // Refresh data after transaction
+    setWalletInfo({...walletInfo});
+  };
+  
+  // Update balance from UserAccount component
+  const updateBalance = (newBalance) => {
+    setBalance(newBalance);
+  };
+  
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app-container">
+      <header className="app-header">
+        <h1>GPU Compute Token System</h1>
+        <WalletConnect onConnect={handleWalletConnect} />
+      </header>
+      
+      {walletInfo && walletInfo.address ? (
+        <main className="app-content">
+          <UserAccount 
+            address={walletInfo.address} 
+            onBalanceUpdate={updateBalance}
+          />
+          
+          <ContractStats isConnected={!!walletInfo} />
+          
+          <div className="action-container">
+            <div className="tabs">
+              <button 
+                className={`tab ${activeTab === 'purchase' ? 'active' : ''}`}
+                onClick={() => setActiveTab('purchase')}
+              >
+                Purchase GPU Hours
+              </button>
+              <button 
+                className={`tab ${activeTab === 'redeem' ? 'active' : ''}`}
+                onClick={() => setActiveTab('redeem')}
+              >
+                Redeem GPU Hours
+              </button>
+            </div>
+            
+            <div className="tab-content">
+              {activeTab === 'purchase' && (
+                <PurchaseForm 
+                  address={walletInfo.address}
+                  onPurchaseComplete={handleTransactionComplete}
+                />
+              )}
+              
+              {activeTab === 'redeem' && (
+                <RedeemForm 
+                  address={walletInfo.address}
+                  balance={balance}
+                  onRedeemComplete={handleTransactionComplete}
+                />
+              )}
+            </div>
+          </div>
+        </main>
+      ) : (
+        <div className="connect-prompt">
+          <h2>Welcome to GPU Compute Token System</h2>
+          <p>Connect your wallet to purchase and redeem GPU compute hours.</p>
+        </div>
+      )}
+    </div>
   )
 }
 
